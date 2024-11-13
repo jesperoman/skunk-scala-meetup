@@ -45,8 +45,15 @@ object HttpServer extends CirceEntityEncoder with CirceEntityDecoder:
   private def routes[F[_]: Async](postgres: Postgres[F]): HttpRoutes[F] =
     val dsl = new Http4sDsl[F] {}
     import dsl.*
-    val _ = postgres
+
     HttpRoutes.of:
+      case req @ POST -> Root / "todos" =>
+        for
+          name <- req.as[String]
+          id <- postgres.add(name)
+          response <- Ok(id)
+        yield response
+
       case _ => NotFound()
 
   given [F[_]: Async, A: Encoder]: EntityEncoder[F, Stream[F, A]] =
