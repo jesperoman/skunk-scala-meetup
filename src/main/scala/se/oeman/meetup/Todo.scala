@@ -23,6 +23,11 @@ object Todo:
     sql"""|SELECT id, name, completed
           |FROM todos""".stripMargin.query(codec)
 
+  val get: Query[Int, Todo] =
+    sql"""|SELECT id, name, completed
+          |FROM todos
+          |WHERE id = $int4""".stripMargin.query(codec)
+
   given CirceCodec[Todo] =
     CirceCodec
       .forProduct3("id", "name", "completed")(

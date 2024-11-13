@@ -35,8 +35,8 @@ object HttpServer extends CirceEntityEncoder with CirceEntityDecoder:
         ErrorHandling.Recover.total(
           ErrorAction.log(
             HttpServer.routes[F](postgres).orNotFound,
-            messageFailureLogAction = (t, msg) => Async[F].delay(println(s"$msg, ${t.getMessage}")),
-            serviceErrorLogAction = (t, msg) => Async[F].delay(println(s"$msg, ${t.getMessage}"))
+            messageFailureLogAction = (t, msg) => Async[F].delay(println(s"$msg, $t.getMessage")),
+            serviceErrorLogAction = (t, msg) => Async[F].delay(println(s"$msg, $t.getMessage"))
           )
         )
       )
@@ -57,6 +57,12 @@ object HttpServer extends CirceEntityEncoder with CirceEntityDecoder:
 
       case GET -> Root / "todos" =>
         Ok(postgres.list)
+
+      case GET -> Root / "todos" / IntVar(id) =>
+        postgres.get(id).flatMap {
+          case Some(todo) => Ok(todo)
+          case None => NotFound(s"No todo with id $id found")
+        }
 
       case _ => NotFound()
 
