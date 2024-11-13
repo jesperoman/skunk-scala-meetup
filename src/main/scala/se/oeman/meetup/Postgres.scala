@@ -24,4 +24,5 @@ object Postgres:
       )
       .evalMap(fromSession)
 
-  def fromSession[F[_]: Async](session: Session[F]): F[Postgres[F]] = ???
+  def fromSession[F[_]: Async](session: Session[F]): F[Postgres[F]] =
+    Async[F].pure(new Postgres[F] {})
