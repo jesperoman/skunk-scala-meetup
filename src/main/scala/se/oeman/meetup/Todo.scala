@@ -28,6 +28,14 @@ object Todo:
           |FROM todos
           |WHERE id = $int4""".stripMargin.query(codec)
 
+  val update: Command[(String, Boolean, Int)] =
+    sql"""|UPDATE todos
+          |SET
+          |name = $varchar,
+          |completed = $bool
+          |WHERE id = $int4
+          |""".stripMargin.command
+
   given CirceCodec[Todo] =
     CirceCodec
       .forProduct3("id", "name", "completed")(

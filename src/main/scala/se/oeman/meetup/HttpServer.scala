@@ -64,6 +64,13 @@ object HttpServer extends CirceEntityEncoder with CirceEntityDecoder:
           case None => NotFound(s"No todo with id $id found")
         }
 
+      case req @ PUT -> Root / "todos" / IntVar(id) =>
+        for
+          todo <- req.as[Todo]
+          result <- postgres.update(id, todo)
+          response <- if (result) postgres.get(id).flatMap(Ok(_)) else NotFound()
+        yield response
+
       case _ => NotFound()
 
   given [F[_]: Async, A: Encoder]: EntityEncoder[F, Stream[F, A]] =
