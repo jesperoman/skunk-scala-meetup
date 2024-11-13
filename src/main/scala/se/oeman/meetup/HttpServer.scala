@@ -7,6 +7,7 @@ import cats.syntax.all.*
 import com.comcast.ip4s.*
 import fs2.Stream
 import fs2.io.net.Network
+import io.circe.Decoder
 import io.circe.Encoder
 import io.circe.syntax.*
 import org.http4s.*
@@ -50,9 +51,12 @@ object HttpServer extends CirceEntityEncoder with CirceEntityDecoder:
       case req @ POST -> Root / "todos" =>
         for
           name <- req.as[String]
-          id <- postgres.add(name)
-          response <- Ok(id)
+          todo <- postgres.add(name)
+          response <- Ok(todo)
         yield response
+
+      case GET -> Root / "todos" =>
+        Ok(postgres.list)
 
       case _ => NotFound()
 
