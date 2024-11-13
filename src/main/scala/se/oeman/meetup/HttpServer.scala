@@ -24,7 +24,7 @@ import scala.concurrent.duration.*
 
 object HttpServer extends CirceEntityEncoder with CirceEntityDecoder:
   def apply[F[_]: Async: Network](
-    postgres: Postgres[F]
+    postgres: Resource[F, Postgres[F]]
   ): Resource[F, Unit] =
     EmberServerBuilder
       .default[F]
@@ -43,7 +43,7 @@ object HttpServer extends CirceEntityEncoder with CirceEntityDecoder:
       .build
       .void
 
-  private def routes[F[_]: Async](postgres: Postgres[F]): HttpRoutes[F] =
+  private def routes[F[_]: Async](postgres: Resource[F, Postgres[F]]): HttpRoutes[F] =
     val dsl = new Http4sDsl[F] {}
     import dsl.*
 
@@ -51,15 +51,15 @@ object HttpServer extends CirceEntityEncoder with CirceEntityDecoder:
       case req @ POST -> Root / "todos" =>
         for
           name <- req.as[String]
-          todo <- postgres.add(name)
-          response <- Ok(todo)
+          id <- postgres.use(_.add(name))
+          response <- Ok(id)
         yield response
 
       case GET -> Root / "todos" =>
-        Ok(postgres.list)
+        postgres.use(pg => Ok(pg.list))
 
       case GET -> Root / "todos" / IntVar(id) =>
-        postgres.get(id).flatMap {
+        postgres.use(_.get(id)).flatMap {
           case Some(todo) => Ok(todo)
           case None => NotFound(s"No todo with id $id found")
         }
@@ -67,12 +67,12 @@ object HttpServer extends CirceEntityEncoder with CirceEntityDecoder:
       case req @ PUT -> Root / "todos" / IntVar(id) =>
         for
           todo <- req.as[Todo]
-          result <- postgres.update(id, todo)
-          response <- if (result) postgres.get(id).flatMap(Ok(_)) else NotFound()
+          result <- postgres.use(_.update(id, todo))
+          response <- if (result) postgres.use(_.get(id).flatMap(Ok(_))) else NotFound()
         yield response
 
       case DELETE -> Root / "todos" / IntVar(id) =>
-        postgres.delete(id).flatMap(result => if (result) Ok() else NotFound())
+        postgres.use(_.delete(id)).flatMap(result => if (result) Ok() else NotFound())
 
   given [F[_]: Async, A: Encoder]: EntityEncoder[F, Stream[F, A]] =
     new EntityEncoder[F, Stream[F, A]]:

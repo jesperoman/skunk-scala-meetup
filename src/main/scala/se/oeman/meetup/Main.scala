@@ -8,6 +8,6 @@ import natchez.Trace.Implicits.noop
 object Main extends ResourceApp.Forever:
   override def run(args: List[String]): Resource[IO, Unit] =
     for
-      postgres <- Postgres.default[IO](PostgresConfig.default)
+      postgres <- Postgres.sessionPool[IO](PostgresConfig.default)
       _ <- HttpServer(postgres)
     yield ()
