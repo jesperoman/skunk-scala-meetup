@@ -23,7 +23,7 @@ What it's basically doing is:
 To be able to automatically restart on code changes, we use the [sbt-revolver](https://github.com/spray/sbt-revolver) sbt plugin, to run the project:
 
 ```
-sbt ~reStart
+sbt "~reStart"
 ```
 
 ## Dependencies
