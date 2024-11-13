@@ -1,0 +1,27 @@
+{
+  "name": "initial_migration",
+  "operations": [
+    {
+      "create_table": {
+        "name": "todos",
+        "columns": [
+          {
+            "name": "id",
+            "type": "serial",
+            "pk": true
+          },
+          {
+            "name": "name",
+            "type": "varchar",
+            "nullable": false
+          },
+          {
+            "name": "completed",
+            "type": "boolean",
+            "default": "false"
+          }
+        ]
+      }
+    }
+  ]
+}
