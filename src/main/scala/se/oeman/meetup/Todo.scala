@@ -36,6 +36,10 @@ object Todo:
           |WHERE id = $int4
           |""".stripMargin.command
 
+  val delete: Command[Int] =
+    sql"""|DELETE FROM todos
+          |WHERE id = $int4""".stripMargin.command
+
   given CirceCodec[Todo] =
     CirceCodec
       .forProduct3("id", "name", "completed")(

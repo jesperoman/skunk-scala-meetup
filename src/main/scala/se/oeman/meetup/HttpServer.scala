@@ -71,7 +71,8 @@ object HttpServer extends CirceEntityEncoder with CirceEntityDecoder:
           response <- if (result) postgres.get(id).flatMap(Ok(_)) else NotFound()
         yield response
 
-      case _ => NotFound()
+      case DELETE -> Root / "todos" / IntVar(id) =>
+        postgres.delete(id).flatMap(result => if (result) Ok() else NotFound())
 
   given [F[_]: Async, A: Encoder]: EntityEncoder[F, Stream[F, A]] =
     new EntityEncoder[F, Stream[F, A]]:
